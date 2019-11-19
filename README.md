@@ -12,6 +12,10 @@
 
 我们提供了包含书中所有插图的彩色版插图集锦：<a href="http://candycat1992.github.io/unity_shaders_book/unity_shaders_book_images.html" target="_blank">HTML</a>，<a href="http://candycat1992.github.io/unity_shaders_book/unity_shaders_book_images.pdf" target="_blank">PDF</a>。
 
+# 2019年新增：改版后的第十八章
+
+当年乐观地以为自己有时间写第二版，是我太年轻了…… 第一版由于我能力有限的确有很多问题，感谢大家一直以来的支持。当年在我有时间的时候曾经花了一些时间重写了第18章，本来是想要放到第二版里的，但是目前第二版遥遥无期，索性直接把改版后的第18章直接放出来，希望能让读者有新的收获：<a href="http://candycat1992.github.io/unity_shaders_book/unity_shaders_book_chapter_18.pdf" target="_blank">改版后的第18章</a>。
+
 # 第四章勘误
 
 由于数学章是全书的重要基础，我们决定把第四章公开，来及时让读者获取最新的第四章数学章的内容：<a href="http://candycat1992.github.io/unity_shaders_book/unity_shaders_book_chapter_4.pdf" target="_blank">PDF</a>。
@@ -54,6 +58,29 @@ Unity 5.4对Shader部分进行了一些比较大的更新，比较明显的变�
 
 在学习本书时，读者需要注意代码中一些由于更新造成的变化。
 
+### 升级Unity 5.5
+
+从Unity 5.5开始，Unity在某些平台（如DX11、DX12、PS4、Xbox One、Metal）等平台对深度缓存进行了反转操作，使得在近平面处的深度值为1，而远平面处为0。这样做的原因主要是为了更加充分得利用浮点深度缓存，具体原因可以参见NVIDIA的相关博客[Depth Precision Visualized](https://developer.nvidia.com/content/depth-precision-visualized)。Unity在[Upgrading to Unity 5.5](https://docs.unity3d.com/Manual/UpgradeGuide55.html)和[Platform-specific rendering differences](https://docs.unity3d.com/Manual/SL-PlatformDifferences.html)文档中对此进行了说明。
+
+在本书代码中，我们在第13章用到了深度纹理，其中对于使用了Linear01Depth、LinearEyeDepth等Unity内置函数的部分不受此变化影响，但我们在Chapter13-MotionBlurWithDepthTexture中直接访问了深度值来计算世界空间下的坐标：
+
+
+```
+// Get the depth buffer value at this pixel.
+float d = SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, i.uv_depth);
+```
+
+这使得在反转深度缓存的情况下会得到错误的结果。为了解决这个问题，我们可以使用内置宏来判断深度是否已被反转，并据此来做出相应的计算。变化后的代码如下：
+
+
+```
+// Get the depth buffer value at this pixel.
+float d = SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, i.uv_depth);
+#if defined(UNITY_REVERSED_Z)
+	d = 1.0 - d;
+#endif
+```
+
 ## 截止到目前的Unity 2017版本
 
 **分支链接**：[unity_2017_1](https://github.com/candycat1992/Unity_Shaders_Book/tree/unity_2017_1)
@@ -72,7 +99,7 @@ Unity 2017对Shader部分没有较大更新，我们主要做了以下更改来�
 | ------------- |:-------------| 
 |Assets/Scenes|包含了各章对应的场景，每个章节对应一个子文件夹，例如第七章所有场景所在的子文件夹为Assets/Scenes/Chapter7。每个场景的命名方式为Scene_章号_小节号_次小节号，例如7.2.3节对应的场景名为Scene_7_2_3。如果同一个小节包含了多个场景，那么会使用英文字母作为后缀依次表示，例如7.1.2节包含了两个场景Scene_7_1_2_a和Scene_7_1_2_b。|
 |Assets/Shaders|包含了各章实现的Unity Shader文件，每个章节对应一个子文件夹，例如第七章实现的所有Unity Shader所在的子文件夹为Assets/Shaders/Chapter7。每个Unity Shader的命名方式为ChapterX-功能，例如第七章使用渐变纹理的Unity Shader名为Chapter7-RampTexture。|
-|Assets/Materials|包含了各章对应的材质，每个章节对应一个子文件夹，例如第七章所有材质所在的子文件夹为Assets/ Scenes/Chapter7。每个材质的命名方式与它使用的Unity Shader名称相匹配，并以Mat作为后缀，例如使用名为Chapter7-RampTexture的Unity Shader的材质名称是RampTextureMat。|
+|Assets/Materials|包含了各章对应的材质，每个章节对应一个子文件夹，例如第七章所有材质所在的子文件夹为Assets/Materials/Chapter7。每个材质的命名方式与它使用的Unity Shader名称相匹配，并以Mat作为后缀，例如使用名为Chapter7-RampTexture的Unity Shader的材质名称是RampTextureMat。|
 |Assets/Scripts|包含了各章对应的C#脚本，每个章节对应一个子文件夹，例如第五章所有脚本所在的子文件夹为Assets/Scripts/Chapter5。|
 |Assets/Textures|包含了各章使用的纹理贴图，每个章节对应一个子文件夹，例如第七章使用的所有纹理所在的子文件夹为Assets/Textures/Chapter7。|
 
